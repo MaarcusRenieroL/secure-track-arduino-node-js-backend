@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URL")
+}
+
+model Fleet {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  ac             Boolean
+  capacity       BigInt
+  color          String
+  fcExpDate      DateTime @db.Date
+  fleetNumber    String
+  make           String
+  model          String
+  organizationId String   @db.ObjectId
+  regNumber      String
+  status         String
+  type           String
+  year           BigInt
+}
+
+model Organization {
+  id                  String @id @default(auto()) @map("_id") @db.ObjectId
+  addressLine1        String
+  addressLine2        String
+  addressLine3        String
+  adminEmail          String
+  adminName           String
+  adminPhoneNumber    String
+  altAdminPhoneNumber String
+  city                String
+  crewsCount          BigInt
+  fleetsCount         BigInt
+  orgName             String
+  orgType             String
+  passengersCount     BigInt
+  pincode             BigInt
+  routesCount         BigInt
+  state               String
+}
+
+model User {
+  id             String  @id @default(auto()) @map("_id") @db.ObjectId
+  email          String
+  isOnboarded    Boolean
+  isVerified     Boolean
+  name           String
+  organizationId String  @db.ObjectId
+  password       String
+  role           String
+}
+
+model passengerlogs {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  v              Int      @map("__v")
+  bTimeStamp     DateTime @db.Date
+  boardingPoint  String
+  dTimeStamp     DateTime @db.Date
+  dropPoint      String
+  fleetNumber    String
+  name           String
+  organizationId String
+  routeNumber    String
+  uid            String
+}
+
+model trackinglogs {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  v              Int      @map("__v")
+  gpsDeviceId    String
+  latitude       Float
+  longitude      Float
+  organizationId String
+  regNumber      String
+  routeNumber    String
+  timeStamp      DateTime @db.Date
+}
