@@ -1,3 +1,6 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,75 +10,192 @@ datasource db {
   url      = env("MONGODB_URL")
 }
 
-model Fleet {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  ac             Boolean
-  capacity       BigInt
-  color          String
-  fcExpDate      DateTime @db.Date
-  fleetNumber    String
-  make           String
-  model          String
-  organizationId String   @db.ObjectId
-  regNumber      String
-  status         String
-  type           String
-  year           BigInt
-}
-
-model Organization {
-  id                  String @id @default(auto()) @map("_id") @db.ObjectId
-  addressLine1        String
-  addressLine2        String
-  addressLine3        String
-  adminEmail          String
-  adminName           String
-  adminPhoneNumber    String
-  altAdminPhoneNumber String
-  city                String
-  crewsCount          BigInt
-  fleetsCount         BigInt
-  orgName             String
-  orgType             String
-  passengersCount     BigInt
-  pincode             BigInt
-  routesCount         BigInt
-  state               String
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  CREW
+  PASSENGER
+  FIRST_RESPONDERS
 }
 
 model User {
-  id             String  @id @default(auto()) @map("_id") @db.ObjectId
-  email          String
-  isOnboarded    Boolean
-  isVerified     Boolean
-  name           String
-  organizationId String  @db.ObjectId
-  password       String
-  role           String
+  userId      String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  email       String   @unique
+  password    String
+  role        UserRole @default(PASSENGER)
+  isVerified  Boolean  @default(false)
+  isOnboarded Boolean  @default(false)
+
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?       @db.ObjectId
+
+  route Route?
+
+  stop   Stop?   @relation(fields: [stopId], references: [stopId])
+  stopId String? @db.ObjectId
 }
 
-model passengerlogs {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  v              Int      @map("__v")
-  bTimeStamp     DateTime @db.Date
-  boardingPoint  String
-  dTimeStamp     DateTime @db.Date
-  dropPoint      String
-  fleetNumber    String
-  name           String
-  organizationId String
-  routeNumber    String
-  uid            String
+enum Gender {
+  MALE
+  FEMALE
+}
+
+model Passenger {
+  profileId      String  @id @default(auto()) @map("_id") @db.ObjectId
+  firstName      String?
+  lastName       String?
+  email          String  @unique
+  gender         Gender?
+  phoneNumber    String?
+  altPhoneNumber String?
+  addressLine1   String?
+  addressLine2   String?
+  addressLine3   String?
+  state          String?
+  city           String?
+  pincode        String?
+
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?       @db.ObjectId
+}
+
+enum OrganizationType {
+  SCHOOL
+  COLLEGE
+  COMPANY
+}
+
+model Organization {
+  organizationId      String           @id @default(auto()) @map("_id") @db.ObjectId
+  orgName             String           @unique
+  orgType             OrganizationType
+  fleetsCount         Int
+  routesCount         Int
+  crewsCount          Int
+  passengersCount     Int
+  adminName           String
+  adminEmail          String
+  adminPhoneNumber    String
+  altAdminPhoneNumber String
+  addressLine1        String
+  addressLine2        String?
+  addressLine3        String?
+  state               String
+  city                String
+  pincode             Int
+
+  users         User[]
+  passengers    Passenger[]
+  fleets        Fleet[]
+  routes        Route[]
+  stops         Stop[]
+  trackinglogs  trackinglogs[]
+  passengerlogs passengerlogs[]
+}
+
+enum FleetType {
+  BUS
+  MINI_BUS
+  VAN
+}
+
+enum FleetStatus {
+  ACTIVE
+  INACTIVE
+  MAINTENANCE
+  IDLE
+}
+
+model Fleet {
+  fleetId     String      @id @default(auto()) @map("_id") @db.ObjectId
+  fleetNumber String      @unique
+  regNumber   String
+  make        String
+  model       String
+  year        Int
+  type        FleetType
+  color       String
+  status      FleetStatus
+  fcExpDate   DateTime
+  capacity    Int
+  ac          Boolean
+
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?       @db.ObjectId
+
+  route Route?
+
+  stop Stop[]
+}
+
+model Route {
+  routeId        String @id @default(auto()) @map("_id") @db.ObjectId
+  routeName      String @unique
+  passengerCount Int
+  startTime      String
+  endTime        String
+  startPoint     String
+  distance       Int
+  duration       Int
+
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?       @db.ObjectId
+
+  driverId User?   @relation(fields: [userId], references: [userId], onDelete: NoAction, onUpdate: NoAction)
+  userId   String? @unique @db.ObjectId
+
+  fleet   Fleet?  @relation(fields: [fleetId], references: [fleetId], onDelete: Cascade, onUpdate: NoAction)
+  fleetId String? @unique @db.ObjectId
+
+  stops Stop[]
+}
+
+model Stop {
+  stopId         String @id @default(auto()) @map("_id") @db.ObjectId
+  stopName       String @unique
+  lat            Float
+  lng            Float
+  pickupTime     String
+  dropTime       String
+  passengerCount Int
+
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?       @db.ObjectId
+
+  route   Route?  @relation(fields: [routeId], references: [routeId], onDelete: Cascade, onUpdate: NoAction)
+  routeId String? @db.ObjectId
+
+  fleet   Fleet?  @relation(fields: [fleetId], references: [fleetId], onDelete: Cascade, onUpdate: NoAction)
+  fleetId String? @db.ObjectId
+
+  users User[]
 }
 
 model trackinglogs {
-  id             String   @id @default(auto()) @map("_id") @db.ObjectId
-  v              Int      @map("__v")
-  gpsDeviceId    String
-  latitude       Float
-  longitude      Float
-  organizationId String
-  regNumber      String
-  routeNumber    String
-  timeStamp      DateTime @db.Date
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  regNumber   String
+  gpsDeviceId String
+  routeNumber String
+  timeStamp   DateTime
+  latitude    Float
+  longitude   Float
+
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?       @db.ObjectId
+}
+
+model passengerlogs {
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  uid           String
+  name          String
+  fleetNumber   String
+  routeNumber   String
+  boardingPoint String
+  dropPoint     String
+  bTimeStamp    DateTime
+  dTimeStamp    DateTime
+
+  organization   Organization? @relation(fields: [organizationId], references: [organizationId])
+  organizationId String?       @db.ObjectId
 }
