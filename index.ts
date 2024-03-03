@@ -3,6 +3,7 @@ import cors from "cors";
 import bodyParser from "body-parser";
 
 import passengerLogRouter from "./routes/passenger-log.route";
+import trackingLogRouter from "./routes/tracking-log.route";
 
 export const app = express();
 
@@ -12,6 +13,7 @@ app.use(bodyParser.json());
 
 // routes
 app.use('/api', passengerLogRouter); 
+app.use('/api', trackingLogRouter);
 
 
 app.listen(process.env.PORT, () => {
