@@ -1,15 +1,17 @@
-import type { Request, Response, NextFunction} from "express";
+import type { Request, Response, NextFunction } from "express";
 import { db } from "../db";
+
+let latitude: number;
+let longitude: number;
 
 export const trackingLogService = async (
   request: Request,
   response: Response,
-  nextFuntion: NextFunction
+  nextFuntion: NextFunction,
 ) => {
   try {
-    const latitude = parseFloat(request.body.latitude);
-    const longitude = parseFloat(request.body.longitude);
-
+    latitude = parseFloat(request.body.latitude);
+    longitude = parseFloat(request.body.longitude);
     const trackingLog = await db.trackinglogs.create({
       data: {
         regNumber: "KCA 123T",
@@ -18,7 +20,7 @@ export const trackingLogService = async (
         timeStamp: new Date(),
         latitude: latitude,
         longitude: longitude,
-        organizationId: "65d989a1bc0a6ec8b97ad24d",
+        organizationId: "65e53df4227fbcc1ab607e80",
       },
     });
 
@@ -31,3 +33,5 @@ export const trackingLogService = async (
     response.status(500).json({ error: "Something went Wrong" });
   }
 };
+
+export { latitude, longitude };
