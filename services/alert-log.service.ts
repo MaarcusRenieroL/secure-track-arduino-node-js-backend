@@ -1,26 +1,18 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import { db } from "../db";
 import { latitude, longitude } from "./tracking-log.service";
+import { pusherServer } from "../lib/pusher";
 
 export const alertLogService = async (
   request: Request,
   response: Response,
-  nextFuntion: NextFunction,
 ) => {
   try {
     const incident = request.body.incident;
 
     console.log("incident detected? [Y/N]: ", incident);
 
-    console.log(
-      "At location: ",
-      latitude,
-      " latitude",
-      longitude,
-      " longitude",
-    );
-
-    await db.alertlogs.create({
+    const result = await db.alertlogs.create({
       data: {
         incidentType: incident,
         incidentTime: new Date(),
@@ -29,6 +21,10 @@ export const alertLogService = async (
         organizationId: "65e53df4227fbcc1ab607e80",
       },
     });
+
+    if (result) {
+      pusherServer.trigger("audit-logs", "incoming-message", result);
+    }
 
     return response.status(201).json({
       statusCode: 200,

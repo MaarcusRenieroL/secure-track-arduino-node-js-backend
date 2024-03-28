@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import { db } from "../db";
 
 let latitude: number;
@@ -7,7 +7,6 @@ let longitude: number;
 export const trackingLogService = async (
   request: Request,
   response: Response,
-  nextFuntion: NextFunction,
 ) => {
   try {
     latitude = parseFloat(request.body.latitude);

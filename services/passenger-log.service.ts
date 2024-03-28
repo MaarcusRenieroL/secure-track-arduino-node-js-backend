@@ -1,10 +1,9 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import { db } from "../db";
 
 export const passengerLogService = async (
   request: Request,
   response: Response,
-  nextFunction: NextFunction
 ) => {
   try {
     const userId = request.body.uid;
@@ -22,7 +21,7 @@ export const passengerLogService = async (
         dropPoint: "default",
         bTimeStamp: currentDate,
         dTimeStamp: dTimeStamp,
-        organizationId: "65d989a1bc0a6ec8b97ad24d",
+        organizationId: "65e53df4227fbcc1ab607e80",
       },
     });
 
